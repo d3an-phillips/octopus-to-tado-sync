@@ -36,6 +36,8 @@ def send_reading_to_tado(username, password, reading):
     """
     Sends the total consumption reading to Tado using its Energy IQ feature.
     """
+    import logging
+logging.basicConfig(level=logging.DEBUG)
     tado = Tado(username, password)
     result = tado.set_eiq_meter_readings(reading=int(reading))
     print(result)
