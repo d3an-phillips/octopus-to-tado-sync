@@ -142,7 +142,7 @@ def get_octopus_tracker_price(api_key, product_code, tariff_code):
     Retrieves today's gas unit rate for the given Octopus Tracker tariff,
     using London timezone for local time comparison.
     """
-    url = f"https://api.octopus.energy/v1/products/{product_code}/tariffs/{tariff_code}/standard-unit-rates/"
+    url = f"https://api.octopus.energy/v1/products/SILVER-25-04-15/gas-tariffs/G-1R-SILVER-25-04-15-A/standard-unit-rates/"
     response = requests.get(url, auth=HTTPBasicAuth(api_key, ""))
 
     if response.status_code != 200:
