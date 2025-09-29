@@ -146,8 +146,10 @@ def get_octopus_tracker_price(api_key, product_code, tariff_code):
 
     results = response.json()["results"]
 
+      # Make now aware
+    now = datetime.utcnow().replace(tzinfo=timezone.utc)
+    
     # Find today's rate (valid_from <= now < valid_to)
-    now = datetime.utcnow()
     for rate in results:
         start = datetime.fromisoformat(rate["valid_from"].replace("Z", "+00:00"))
         end = (
