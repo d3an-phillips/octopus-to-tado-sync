@@ -2,13 +2,13 @@ import argparse
 import asyncio
 import requests
 from datetime import datetime
-import pytz
 from requests.auth import HTTPBasicAuth
 from playwright.async_api import async_playwright
 from PyTado.interface import Tado
+from zoneinfo import ZoneInfo
 
-london_tz = pytz.timezone("Europe/London")
-now = datetime.now(london_tz)
+london_tz = ZoneInfo("Europe/London")
+now = datetime.now(tz=london_tz)
 
 def get_meter_reading_total_consumption(api_key, mprn, gas_serial_number):
     """
@@ -154,12 +154,12 @@ def get_octopus_tracker_price(api_key, product_code, tariff_code):
     
     # Find today's rate (valid_from <= now < valid_to)
     for rate in results:
-        start = datetime.fromisoformat(rate["valid_from"].replace("Z", "+00:00")).astimezone(london_tz)
-        end = (
-            datetime.fromisoformat(rate["valid_to"].replace("Z", "+00:00")).astimezone(london_tz) if rate["valid_to"] else None
-            if rate["valid_to"]
-            else None
-        )
+    start = datetime.fromisoformat(rate["valid_from"].replace("Z", "+00:00")).astimezone(london_tz)
+    end = (
+        datetime.fromisoformat(rate["valid_to"].replace("Z", "+00:00")).astimezone(london_tz)
+        if rate["valid_to"]
+        else None
+    )
         if start <= now and (end is None or now < end):
             return rate["value_inc_vat"], start, end
 
