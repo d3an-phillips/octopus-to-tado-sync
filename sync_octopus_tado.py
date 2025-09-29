@@ -5,10 +5,6 @@ from datetime import datetime
 from requests.auth import HTTPBasicAuth
 from playwright.async_api import async_playwright
 from PyTado.interface import Tado
-from zoneinfo import ZoneInfo
-
-london_tz = ZoneInfo("Europe/London")
-now = datetime.now(tz=london_tz)
 
 def get_meter_reading_total_consumption(api_key, mprn, gas_serial_number):
     """
@@ -131,63 +127,6 @@ def parse_args():
 
     return parser.parse_args()
 
-
-#####
-
-
-#Daily Tariff Updater
-
-def get_octopus_tracker_price(api_key, product_code, tariff_code):
-    """
-    Retrieves today's gas unit rate for the given Octopus Tracker tariff,
-    using London timezone for local time comparison.
-    """
-    url = f"https://api.octopus.energy/v1/products/SILVER-25-04-15/gas-tariffs/G-1R-SILVER-25-04-15-A/standard-unit-rates/"
-    response = requests.get(url, auth=HTTPBasicAuth(api_key, ""))
-
-    if response.status_code != 200:
-        raise Exception(f"Failed to get tariff: {response.text}")
-
-    results = response.json()["results"]
-
-    # Set London timezone
-    london_tz = ZoneInfo("Europe/London")
-    now = datetime.now(tz=london_tz)
-
-    for rate in results:
-        start = datetime.fromisoformat(rate["valid_from"].replace("Z", "+00:00")).astimezone(london_tz)
-        end = (
-            datetime.fromisoformat(rate["valid_to"].replace("Z", "+00:00")).astimezone(london_tz)
-            if rate["valid_to"]
-            else None
-        )
-
-        if start <= now and (end is None or now < end):
-            return rate["value_inc_vat"], start, end
-
-    raise Exception("No valid tariff rate found for now")
-
-
-def send_tariff_to_tado(username, password, unit_price, start, end):
-    """
-    Sends tariff info to Tado's Energy IQ.
-    """
-    tado = tado_login(username=username, password=password)
-
-    result = tado.set_eiq_tariff_information(
-        unit_price=unit_price,
-        currency="GBP",
-        valid_from=start.isoformat(),
-        valid_to=end.isoformat() if end else None,
-    )
-    print(result)
-
-
-
-#####
-
-
-
 if __name__ == "__main__":
     args = parse_args()
 
@@ -198,12 +137,3 @@ if __name__ == "__main__":
 
     # Send the total consumption to Tado
     send_reading_to_tado(args.tado_email, args.tado_password, consumption)
-
-    # Octopus Tracker tariff info
-    unit_price, start, end = get_octopus_tracker_price(
-    args.octopus_api_key,
-    "SILVER-25-04-15",           # product code
-    "G-1R-SILVER-25-04-15-A"      # example tariff code (replace with your region)
-    )
-
-    send_tariff_to_tado(args.tado_email, args.tado_password, unit_price, start, end)
