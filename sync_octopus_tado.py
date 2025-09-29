@@ -129,28 +129,7 @@ def parse_args():
     return parser.parse_args()
 
 
-if __name__ == "__main__":
-    args = parse_args()
-
-    # Get total consumption from Octopus Energy API
-    consumption = get_meter_reading_total_consumption(
-        args.octopus_api_key, args.mprn, args.gas_serial_number
-    )
-
-    # Send the total consumption to Tado
-    send_reading_to_tado(args.tado_email, args.tado_password, consumption)
-
-    # Octopus Tracker tariff info
-    unit_price, start, end = get_octopus_tracker_price(
-    args.octopus_api_key,
-    "SILVER-25-04-15",           # product code
-    "G-1R-SILVER-25-04-15-A"      # example tariff code (replace with your region)
-    )
-
-    send_tariff_to_tado(args.tado_email, args.tado_password, unit_price, start, end)
-
-
-
+#####
 
 
 #Daily Tariff Updater
@@ -195,3 +174,29 @@ def send_tariff_to_tado(username, password, unit_price, start, end):
         valid_to=end.isoformat() if end else None,
     )
     print(result)
+
+
+
+#####
+
+
+
+if __name__ == "__main__":
+    args = parse_args()
+
+    # Get total consumption from Octopus Energy API
+    consumption = get_meter_reading_total_consumption(
+        args.octopus_api_key, args.mprn, args.gas_serial_number
+    )
+
+    # Send the total consumption to Tado
+    send_reading_to_tado(args.tado_email, args.tado_password, consumption)
+
+    # Octopus Tracker tariff info
+    unit_price, start, end = get_octopus_tracker_price(
+    args.octopus_api_key,
+    "SILVER-25-04-15",           # product code
+    "G-1R-SILVER-25-04-15-A"      # example tariff code (replace with your region)
+    )
+
+    send_tariff_to_tado(args.tado_email, args.tado_password, unit_price, start, end)
