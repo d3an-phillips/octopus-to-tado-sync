@@ -139,9 +139,10 @@ def parse_args():
 
 def get_octopus_tracker_price(api_key, product_code, tariff_code):
     """
-    Retrieves today's gas unit rate for the given Octopus Tracker tariff.
+    Retrieves today's gas unit rate for the given Octopus Tracker tariff,
+    using London timezone for local time comparison.
     """
-    url = f"https://api.octopus.energy/v1/products/SILVER-25-04-15/gas-tariffs/G-1R-SILVER-25-04-15-A/standard-unit-rates/"
+    url = f"https://api.octopus.energy/v1/products/{product_code}/tariffs/{tariff_code}/standard-unit-rates/"
     response = requests.get(url, auth=HTTPBasicAuth(api_key, ""))
 
     if response.status_code != 200:
@@ -149,10 +150,10 @@ def get_octopus_tracker_price(api_key, product_code, tariff_code):
 
     results = response.json()["results"]
 
-      # Make now aware
-    now = datetime.utcnow().replace(tzinfo=timezone.utc)
-    
-    # Find today's rate (valid_from <= now < valid_to)
+    # Set London timezone
+    london_tz = ZoneInfo("Europe/London")
+    now = datetime.now(tz=london_tz)
+
     for rate in results:
         start = datetime.fromisoformat(rate["valid_from"].replace("Z", "+00:00")).astimezone(london_tz)
         end = (
@@ -160,6 +161,7 @@ def get_octopus_tracker_price(api_key, product_code, tariff_code):
             if rate["valid_to"]
             else None
         )
+
         if start <= now and (end is None or now < end):
             return rate["value_inc_vat"], start, end
 
