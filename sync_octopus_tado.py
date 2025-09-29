@@ -154,12 +154,12 @@ def get_octopus_tracker_price(api_key, product_code, tariff_code):
     
     # Find today's rate (valid_from <= now < valid_to)
     for rate in results:
-    start = datetime.fromisoformat(rate["valid_from"].replace("Z", "+00:00")).astimezone(london_tz)
-    end = (
-        datetime.fromisoformat(rate["valid_to"].replace("Z", "+00:00")).astimezone(london_tz)
-        if rate["valid_to"]
-        else None
-    )
+        start = datetime.fromisoformat(rate["valid_from"].replace("Z", "+00:00")).astimezone(london_tz)
+        end = (
+            datetime.fromisoformat(rate["valid_to"].replace("Z", "+00:00")).astimezone(london_tz)
+            if rate["valid_to"]
+            else None
+        )
         if start <= now and (end is None or now < end):
             return rate["value_inc_vat"], start, end
 
